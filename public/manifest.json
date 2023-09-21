@@ -1,0 +1,10 @@
+{
+    "name": "Post filter",
+    "description": "Filtering posts by most popular",
+    "version": "1.0.0",
+    "manifest_version": 3,
+    "permissions": ["storage", "activeTab", "scripting"],
+    "action": {
+      "default_popup": "index.html"
+    }
+}
