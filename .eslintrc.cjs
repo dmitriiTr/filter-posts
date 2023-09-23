@@ -14,7 +14,6 @@ module.exports = {
 		"no-debugger": 1,
 		"@typescript-eslint/quotes": [1, "single"],
 		"no-trailing-spaces": 1,
-		"arrow-body-style": [1, "always"],
 		"sort-imports": [1, { "allowSeparatedGroups": true }],
 		"linebreak-style": [1, "windows"],
 		"no-multiple-empty-lines": 1,

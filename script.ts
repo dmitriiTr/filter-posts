@@ -15,7 +15,7 @@ hidePostsElement?.addEventListener('click', async () => {
 });
 
 const hidePosts = () => {
-	chrome.storage.sync.get('postNumber', ({ postNumber }) => {
+	chrome.storage.sync.get('postNumber').then(({ postNumber }) => {
 		document.querySelectorAll('div.post').forEach(element => {
 			const childNodes = element.childNodes;
 
