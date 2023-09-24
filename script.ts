@@ -19,14 +19,14 @@ const hidePostsBoard = () => {
   chrome.storage.sync.get('postNumber').then(({ postNumber }) => {
     document.querySelectorAll('div.post').forEach(element => {
 
-      const replies = element.getElementsByClassName('post__refmap')[0];
-      const filterValue = Math.floor(postNumber * 2);
+      const repliesSection = element.getElementsByClassName('post__refmap')[0];
+      const replies = repliesSection?.getElementsByClassName('post-reply-link');
       const hiddenClass = 'post_type_hidden';
 
-      if (replies && filterValue > replies.childNodes.length) {
-        element.classList.add(hiddenClass);
-      } else {
+      if (replies && postNumber <= replies.length) {
         element.classList.remove(hiddenClass);
+      } else {
+        element.classList.add(hiddenClass);
       }
     });
   });
@@ -40,7 +40,7 @@ const hidePosts4Board = () => {
       const replies = repliesSection?.getElementsByClassName('quotelink');
       const hiddenClass = 'post-hidden';
 
-      if (replies && postNumber <= (replies?.length || 0)) {
+      if (replies && postNumber <= replies.length ) {
         element.classList.remove(hiddenClass);
       } else {
         element.classList.add(hiddenClass);
