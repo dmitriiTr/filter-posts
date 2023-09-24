@@ -2,33 +2,52 @@ const hidePostsElement = document.getElementById('hidePosts');
 
 hidePostsElement?.addEventListener('click', async () => {
   const postNumber = document.querySelector<HTMLInputElement>('#postnumber');
-  chrome.storage.sync.set({ postNumber: postNumber?.value || 1 });
+  chrome.storage.sync.set({ postNumber: parseInt(postNumber?.value || '1') });
   const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
   const tabId = tab?.id;
 
   if (tabId) {
-    chrome.scripting.executeScript({
-      target: { tabId },
-      func: hidePosts,
-    });
+    const method = tab.url?.includes('web.telegram.org') ?
+      hidePostsTelegram : hidePostsBoard;
+
+    chrome.scripting.executeScript({ target: { tabId }, func: method, });
   }
 });
 
-const hidePosts = () => {
+const hidePostsBoard = () => {
   chrome.storage.sync.get('postNumber').then(({ postNumber }) => {
     document.querySelectorAll('div.post').forEach(element => {
-      const childNodes = element.childNodes;
 
-      if (childNodes.length > 0) {
-        const replies = element.getElementsByClassName('post__refmap')[0];
-        const filterValue = Math.floor(parseInt(postNumber) * 2);
-        const hiddenClass = 'post_type_hidden';
+      const replies = element.getElementsByClassName('post__refmap')[0];
+      const filterValue = Math.floor(postNumber * 2);
+      const hiddenClass = 'post_type_hidden';
 
-        if (replies && filterValue > replies.childNodes.length) {
-          element.classList.add(hiddenClass);
-        } else {
-          element.classList.remove(hiddenClass);
-        }
+      if (replies && filterValue > replies.childNodes.length) {
+        element.classList.add(hiddenClass);
+      } else {
+        element.classList.remove(hiddenClass);
+      }
+    });
+  });
+};
+
+const hidePostsTelegram = () => {
+  chrome.storage.sync.get('postNumber').then(({ postNumber }) => {
+    document.querySelectorAll('div.channel-post').forEach(element => {
+
+      const reactions = element.getElementsByClassName('reaction-counter');
+      const count = Array.prototype.reduce.call(reactions,
+        (sum: number, reaction: Element) => sum += parseInt(reaction.innerHTML),
+        0
+      );
+
+      if (count < postNumber) {
+        const message = element.getElementsByClassName('message')[0];
+        const attachment = element.getElementsByClassName('attachment')[0];
+        const replies = element.getElementsByClassName('replies')[0];
+        message?.remove();
+        attachment?.remove();
+        replies?.remove();
       }
     });
   });
