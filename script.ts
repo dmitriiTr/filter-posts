@@ -7,8 +7,9 @@ hidePostsElement?.addEventListener('click', async () => {
   const tabId = tab?.id;
 
   if (tabId) {
-    const method = tab.url?.includes('web.telegram.org') ?
-      hidePostsTelegram : hidePostsBoard;
+    const url = tab.url || '';
+    const method = url.includes('web.telegram.org') ? hidePostsTelegram :
+      url.includes('4channel') ? hidePosts4Board : hidePostsBoard;
 
     chrome.scripting.executeScript({ target: { tabId }, func: method, });
   }
@@ -26,6 +27,23 @@ const hidePostsBoard = () => {
         element.classList.add(hiddenClass);
       } else {
         element.classList.remove(hiddenClass);
+      }
+    });
+  });
+};
+
+const hidePosts4Board = () => {
+  chrome.storage.sync.get('postNumber').then(({ postNumber }) => {
+    document.querySelectorAll('div.postContainer').forEach(element => {
+
+      const repliesSection = element.getElementsByClassName('backlink')[0];
+      const replies = repliesSection?.getElementsByClassName('quotelink');
+      const hiddenClass = 'post-hidden';
+
+      if (replies && postNumber <= (replies?.length || 0)) {
+        element.classList.remove(hiddenClass);
+      } else {
+        element.classList.add(hiddenClass);
       }
     });
   });
