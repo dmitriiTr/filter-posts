@@ -2,7 +2,7 @@ const hidePostsElement = document.getElementById('hidePosts');
 
 hidePostsElement?.addEventListener('click', async () => {
   const postNumber = document.querySelector<HTMLInputElement>('#postnumber');
-  chrome.storage.sync.set({ postNumber: parseInt(postNumber?.value || '1') });
+  chrome.storage.sync.set({ postNumber: parseInt(postNumber?.value || '0') });
   const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
   const tabId = tab?.id;
 
@@ -23,7 +23,7 @@ const hidePostsBoard = () => {
       const replies = repliesSection?.getElementsByClassName('post-reply-link');
       const hiddenClass = 'post_type_hidden';
 
-      if (replies && postNumber <= replies.length) {
+      if (postNumber <= (replies?.length || 0)) {
         element.classList.remove(hiddenClass);
       } else {
         element.classList.add(hiddenClass);
@@ -40,7 +40,7 @@ const hidePosts4Board = () => {
       const replies = repliesSection?.getElementsByClassName('quotelink');
       const hiddenClass = 'post-hidden';
 
-      if (replies && postNumber <= replies.length ) {
+      if (postNumber <= (replies?.length || 0)) {
         element.classList.remove(hiddenClass);
       } else {
         element.classList.add(hiddenClass);
