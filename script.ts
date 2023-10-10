@@ -1,6 +1,14 @@
 const hidePostsElement = document.getElementById('hidePosts');
 
-hidePostsElement?.addEventListener('click', async () => {
+hidePostsElement?.addEventListener('click', async () => await handleEvent());
+
+hidePostsElement?.addEventListener('keydown', async e => {
+  if (e.key === 'a') {
+    await handleEvent();
+  }
+});
+
+const handleEvent = async () => {
   const postNumber = document.querySelector<HTMLInputElement>('#postnumber');
   chrome.storage.sync.set({ postNumber: parseInt(postNumber?.value || '0') });
   const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
@@ -13,7 +21,7 @@ hidePostsElement?.addEventListener('click', async () => {
 
     chrome.scripting.executeScript({ target: { tabId }, func: method, });
   }
-});
+};
 
 const hidePostsBoard = () => {
   chrome.storage.sync.get('postNumber').then(({ postNumber }) => {
