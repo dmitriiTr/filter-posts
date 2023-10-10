@@ -55,7 +55,8 @@ const hidePostsTelegram = () => {
 
       const reactions = element.getElementsByClassName('reaction-counter');
       const count = Array.prototype.reduce.call(reactions,
-        (sum: number, reaction: Element) => sum += parseInt(reaction.innerHTML),
+        (sum: number, reaction: Element) =>
+          sum += parseInt(reaction.textContent || '0'),
         0
       );
 
@@ -63,9 +64,11 @@ const hidePostsTelegram = () => {
         const message = element.getElementsByClassName('message')[0];
         const attachment = element.getElementsByClassName('attachment')[0];
         const replies = element.getElementsByClassName('replies')[0];
+        const reactions = element.getElementsByClassName('reactions')[0];
         message?.remove();
         attachment?.remove();
         replies?.remove();
+        reactions?.remove();
       }
     });
   });
