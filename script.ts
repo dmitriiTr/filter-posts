@@ -60,11 +60,13 @@ const hidePosts4Board = () => {
 const hidePostsTelegram = () => {
   chrome.storage.sync.get('postNumber').then(({ postNumber }) => {
     document.querySelectorAll('div.channel-post').forEach(element => {
+      const getReactionNumber = (text: string) => parseFloat(text) *
+        (text.includes('K') ? 1000 : 1);
 
       const reactions = element.getElementsByClassName('reaction-counter');
       const count = Array.prototype.reduce.call(reactions,
         (sum: number, reaction: Element) =>
-          sum += parseInt(reaction.textContent || '0'),
+          sum += getReactionNumber(reaction.textContent || '0'),
         0
       );
 
