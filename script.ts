@@ -16,8 +16,10 @@ const handleEvent = async () => {
 
   if (tabId) {
     const url = tab.url || '';
-    const method = url.includes('web.telegram.org') ? hidePostsTelegram :
-      url.includes('4channel') ? hidePosts4Board : hidePostsBoard;
+    const method = url.includes('web.telegram.org')
+      ? hidePostsTelegram : url.includes('youtube')
+        ? hideVideosYoutube : url.includes('4channel')
+          ? hidePosts4Board : hidePostsBoard;
 
     chrome.scripting.executeScript({ target: { tabId }, func: method, });
   }
@@ -79,6 +81,28 @@ const hidePostsTelegram = () => {
         attachment?.remove();
         replies?.remove();
         reactions?.remove();
+      }
+    });
+  });
+};
+
+const hideVideosYoutube = () => {
+  chrome.storage.sync.get('postNumber').then(({ postNumber }) => {
+    document.querySelectorAll('div.ytd-rich-item-renderer').forEach(element => {
+      const viewCountData =
+        element.querySelectorAll('span.ytd-video-meta-block')[0]?.
+          textContent?.split('\xa0');
+
+      if (viewCountData) {
+        const viewNumber = parseInt(viewCountData[0] || '0');
+        const order = viewCountData[1]?.includes('.')
+          ? 10 ** 3 : viewCountData[1]?.includes(' ')
+            ? 10 ** 6 : 1; // looking for thousands and millions
+        if (viewNumber * order < postNumber) {
+          element.setAttribute('hidden', '');
+        } else {
+          element.removeAttribute('hidden');
+        }
       }
     });
   });
