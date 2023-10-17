@@ -12,9 +12,16 @@ chrome.tabs.query({ active: true, currentWindow: true }).then(([tab]) => {
   const tabId = tab?.id;
   if (tabId) {
     chrome.scripting.executeScript({
-      target: { tabId }, func: () => document.styleSheets.item(0)?.
+      target: { tabId }, func: () => document.styleSheets.item(1)?.
         insertRule('[hidden] { display: none !important; }')
     });
+  }
+});
+
+chrome.storage.sync.get('postNumber').then(({ postNumber }) => {
+  const input = document.querySelector<HTMLInputElement>('#postnumber');
+  if (input) {
+    input.value = postNumber;
   }
 });
 
