@@ -8,6 +8,16 @@ hidePostsElement?.addEventListener('keydown', async e => {
   }
 });
 
+chrome.tabs.query({ active: true, currentWindow: true }).then(([tab]) => {
+  const tabId = tab?.id;
+  if (tabId) {
+    chrome.scripting.executeScript({
+      target: { tabId }, func: () => document.styleSheets.item(0)?.
+        insertRule('[hidden] { display: none !important; }')
+    });
+  }
+});
+
 const handleEvent = async () => {
   const postNumber = document.querySelector<HTMLInputElement>('#postnumber');
   chrome.storage.sync.set({ postNumber: parseInt(postNumber?.value || '0') });
@@ -65,22 +75,17 @@ const hidePostsTelegram = () => {
       const getReactionNumber = (text: string) => parseFloat(text) *
         (text.includes('K') ? 1000 : 1);
 
-      const reactions = element.getElementsByClassName('reaction-counter');
-      const count = Array.prototype.reduce.call(reactions,
+      const reactionsAll = element.getElementsByClassName('reaction-counter');
+      const count = Array.prototype.reduce.call(reactionsAll,
         (sum: number, reaction: Element) =>
           sum += getReactionNumber(reaction.textContent || '0'),
         0
       );
 
       if (count < postNumber) {
-        const message = element.getElementsByClassName('message')[0];
-        const attachment = element.getElementsByClassName('attachment')[0];
-        const replies = element.getElementsByClassName('replies')[0];
-        const reactions = element.getElementsByClassName('reactions')[0];
-        message?.remove();
-        attachment?.remove();
-        replies?.remove();
-        reactions?.remove();
+        element.setAttribute('hidden', '');
+      } else {
+        element.removeAttribute('hidden');
       }
     });
   });
