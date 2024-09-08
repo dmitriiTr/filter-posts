@@ -26,6 +26,6 @@
     },
     "compileOnSave": true,
     "include": [
-        "script.ts"
+        "script.js"
     ]
 }
