@@ -6,11 +6,11 @@
 
 const hidePostsElement = document.getElementById("hidePosts");
 
-hidePostsElement?.addEventListener("click", async () => await handleEvent());
+hidePostsElement?.addEventListener("click", () => handleClick());
 
 hidePostsElement?.addEventListener("keydown", async (e) => {
   if (e.key === "a") {
-    await handleEvent();
+    await handleClick();
   }
 });
 
@@ -34,30 +34,25 @@ chrome.storage.sync.get("data").then(({ data }) => {
   }
 });
 
-const handleEvent = async () => {
+const handleClick = async () => {
   const postNumber = document.querySelector("#postnumber");
-  const forwarded = !!document.querySelector("#hide_forwarded")?.checked;
+  const hideForwarded = !!document.querySelector("#hide_forwarded")?.checked;
 
-  await chrome.storage.sync.set({
-    data: {
-      postNumber: parseInt(postNumber?.value || "0"),
-      forwarded,
-    },
-  });
-  const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+  const [[tab]] = await Promise.all([
+    chrome.tabs.query({ active: true, currentWindow: true }),
+    chrome.storage.sync.set({
+      data: {
+        postNumber: parseInt(postNumber?.value || "0"),
+        hideForwarded,
+      },
+    }),
+  ]);
+
   const tabId = tab?.id;
 
   if (tabId) {
-    const url = tab.url || "";
-    const method = url.includes("web.telegram.org")
-      ? hidePostsTelegram
-      : url.includes("youtube")
-      ? hideVideosYoutube
-      : url.includes("4channel")
-      ? hidePosts4Board
-      : hidePostsBoard;
-
-    console.log(parseInt(postNumber?.value || "0"), forwarded);
+    const url = (tab.url || "").split("/").at(2);
+    const method = urlToMethod[url] || hidePostsBoard;
 
     chrome.scripting.executeScript({ target: { tabId }, func: method });
   }
@@ -96,24 +91,23 @@ const hidePosts4Board = () => {
 };
 
 const hidePostsTelegram = () => {
+  const getReactionNumber = (text) =>
+    parseFloat(text) * (text.includes("K") ? 1000 : 1);
+
   chrome.storage.sync.get("data").then(({ data }) => {
     document.querySelectorAll("div.Message").forEach((element) => {
-      const isForwared = !!element.getElementsByClassName("peer-title").length;
-      const getReactionNumber = (text) =>
-        parseFloat(text) * (text.includes("K") ? 1000 : 1);
+      const isForwared =
+        !!element.getElementsByClassName("is-forwarded").length;
 
-      const reactionsAll = element.querySelectorAll("button");
-      console.log(reactionsAll[0]);
-      const count = Array.prototype.reduce.call(
-        reactionsAll,
+      const reactionsElements = element.querySelectorAll("button");
+      const reactionsCount = Array.prototype.reduce.call(
+        reactionsElements,
         (sum, reaction) =>
           (sum += getReactionNumber(reaction.textContent || "0")),
         0
       );
 
-      console.log(reactionsAll[0], count);
-
-      if ((data.forwarded && isForwared) || count < data.postNumber) {
+      if ((data.hideForwarded && isForwared) || reactionsCount < data.postNumber) {
         element.setAttribute("hidden", "");
       } else {
         element.removeAttribute("hidden");
@@ -146,4 +140,10 @@ const hideVideosYoutube = () => {
         }
       });
   });
+};
+
+const urlToMethod = {
+  "web.telegram.org": hidePostsTelegram,
+  "youtube.com": hideVideosYoutube,
+  "zip.4channel.org": hidePosts4Board,
 };
